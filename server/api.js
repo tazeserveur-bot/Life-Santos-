@@ -47,6 +47,31 @@ async function uploadImage(file) {
     stream.end(file.buffer);
   });
 }
+async function sendPlanAnnouncement(plan) {
+  if (!process.env.DISCORD_BOT_TOKEN || !process.env.ANNOUNCEMENT_CHANNEL_ID) {
+    throw new Error('Ajoute DISCORD_BOT_TOKEN et ANNOUNCEMENT_CHANNEL_ID dans Render pour activer les annonces.');
+  }
+  const roleId = process.env.PLAYER_ROLE_ID;
+  const siteUrl = process.env.RENDER_EXTERNAL_URL || 'https://life-santos.onrender.com';
+  const response = await fetch(`https://discord.com/api/v10/channels/${process.env.ANNOUNCEMENT_CHANNEL_ID}/messages`, {
+    method: 'POST',
+    headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content: roleId ? `<@&${roleId}> Nouveau planning Life Santos disponible !` : 'Nouveau planning Life Santos disponible !',
+      embeds: [{
+        title: 'Planning de la semaine',
+        description: `Du ${plan.start_date} au ${plan.end_date}. Retrouvez le planning sur le site Life Santos.`,
+        color: 0xffb52b,
+        image: { url: plan.image_url },
+        url: siteUrl,
+        footer: { text: 'Life Santos · Une ville, mille histoires' }
+      }],
+      allowed_mentions: { roles: roleId ? [roleId] : [] }
+    })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.message || `Discord a refusé l’annonce (HTTP ${response.status}).`);
+}
 async function getGuildMember(userId) {
   const response = await fetch(`https://discord.com/api/v10/guilds/${process.env.DISCORD_GUILD_ID}/members/${userId}`, { headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` } });
   if (!response.ok) return null;
@@ -91,14 +116,14 @@ app.post('/api/plans', requireStaff, upload.single('image'), async (req, res) =>
     if (!start_date || !end_date || start_date > end_date) return res.status(400).json({ error: 'La période du planning est invalide.' });
     const imageUrl = await uploadImage(req.file);
     if (!imageUrl) return res.status(400).json({ error: 'Ajoute une affiche au planning.' });
-    const client = await pool.connect();
+    const plan = (await pool.query('INSERT INTO plans(start_date,end_date,image_url,published_by) VALUES($1,$2,$3,$4) RETURNING *', [start_date, end_date, imageUrl, req.session.user.username])).rows[0];
     try {
-      await client.query('BEGIN');
-      const plan = (await client.query('INSERT INTO plans(start_date,end_date,image_url,published_by) VALUES($1,$2,$3,$4) RETURNING *', [start_date, end_date, imageUrl, req.session.user.username])).rows[0];
-      await client.query('INSERT INTO bot_jobs(kind,payload) VALUES($1,$2)', ['publish_plan', JSON.stringify(plan)]);
-      await client.query('COMMIT');
-      res.status(201).json(plan);
-    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+      await sendPlanAnnouncement(plan);
+      res.status(201).json({ ...plan, announcement_sent: true });
+    } catch (error) {
+      console.error('Discord announcement failed:', error.message);
+      res.status(201).json({ ...plan, announcement_sent: false, announcement_error: error.message });
+    }
   } catch (error) { console.error('Plan publish error:', error.message); res.status(500).json({ error: error.message || 'Publication impossible.' }); }
 });
 app.post('/api/uploads', requireLogin, upload.single('image'), async (req, res) => {
