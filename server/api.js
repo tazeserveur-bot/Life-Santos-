@@ -100,9 +100,9 @@ async function getGuildMember(userId) {
 }
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
-app.get('/api/config-status', async (_req, res) => res.json({ discordLogin: Boolean(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET && process.env.DISCORD_GUILD_ID), discordAnnouncements: Boolean(process.env.DISCORD_BOT_TOKEN && (await getSiteSetting('announcement_channel_id') || process.env.ANNOUNCEMENT_CHANNEL_ID)), playerRole: Boolean(await getSiteSetting('player_role_id') || process.env.PLAYER_ROLE_ID), cloudinary: Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET), staffAccess: Boolean(process.env.STAFF_ROLE_IDS || process.env.STAFF_USER_IDS) }));
+app.get('/api/config-status', async (_req, res) => res.json({ discordLogin: Boolean(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET && process.env.DISCORD_GUILD_ID && process.env.DISCORD_BOT_TOKEN), discordAnnouncements: Boolean(process.env.DISCORD_BOT_TOKEN && (await getSiteSetting('announcement_channel_id') || process.env.ANNOUNCEMENT_CHANNEL_ID)), playerRole: Boolean(await getSiteSetting('player_role_id') || process.env.PLAYER_ROLE_ID), cloudinary: Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET), staffAccess: Boolean(process.env.STAFF_ROLE_IDS || process.env.STAFF_USER_IDS) }));
 app.get('/auth/discord', (req, res) => {
-  if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_GUILD_ID) return res.redirect('/?discord=configure');
+  if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_GUILD_ID || !process.env.DISCORD_BOT_TOKEN) return res.redirect('/?discord=configure');
   const state = crypto.randomBytes(24).toString('hex');
   req.session.oauthState = state;
   const query = new URLSearchParams({ client_id: process.env.DISCORD_CLIENT_ID, redirect_uri: callbackUrl(), response_type: 'code', scope: 'identify', state, prompt: 'consent' });
