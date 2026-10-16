@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10130f">
+  <title>Connexion · Life Santos</title>
+  <meta name="description" content="Connecte-toi avec Discord pour rejoindre l’espace Life Santos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--ink:#f5f5ee;--muted:#a4a89d;--lime:#c6f36a;--line:rgba(255,255,255,.1)}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#10130f;color:var(--ink);font:15px 'DM Sans',sans-serif;display:grid;place-items:center;overflow:hidden}
+    body:before,body:after{content:"";position:fixed;width:38rem;height:38rem;border-radius:50%;filter:blur(100px);opacity:.14;pointer-events:none}body:before{background:#b9ef55;top:-25rem;left:-18rem}body:after{background:#ff962e;right:-20rem;bottom:-27rem}
+    .grain{position:fixed;inset:0;opacity:.08;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E")}
+    main{position:relative;width:min(100% - 32px,460px);padding:46px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,rgba(33,38,29,.96),rgba(20,23,19,.96));box-shadow:0 28px 100px rgba(0,0,0,.45)}
+    .brand{display:flex;align-items:center;gap:13px;margin-bottom:52px;color:var(--ink);text-decoration:none;font:800 15px Manrope,sans-serif;letter-spacing:.08em}.brand img{width:47px;height:47px;object-fit:contain}.brand b{color:var(--lime)}
+    .eyebrow{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.16em}.spark{display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 14px #c6f36a}
+    h1{margin:15px 0 12px;font:800 clamp(34px,8vw,46px)/1.08 Manrope,sans-serif;letter-spacing:-.055em}h1 span{color:var(--lime)}p{margin:0;color:var(--muted);line-height:1.65}
+    .discord{width:100%;display:flex;justify-content:center;align-items:center;gap:11px;margin-top:31px;padding:16px;border:0;border-radius:12px;background:#5865f2;color:#fff;font:700 15px 'DM Sans',sans-serif;text-decoration:none;transition:transform .18s,background .18s}.discord:hover{transform:translateY(-2px);background:#6b76ff}.discord[aria-disabled=true]{background:#41456a;cursor:not-allowed}
+    .discord svg{width:22px;height:22px;fill:currentColor}.status{display:none;margin-top:17px;padding:13px 14px;border:1px solid rgba(255,181,84,.28);border-radius:10px;background:rgba(255,181,84,.08);color:#f5c27a;font-size:13px;line-height:1.5}.status.show{display:block}
+    .bottom{display:flex;justify-content:space-between;gap:12px;margin-top:34px;padding-top:18px;border-top:1px solid var(--line);color:#777e70;font-size:11px}.bottom span:last-child{color:#a4a89d}
+    @media(max-width:520px){main{padding:31px 25px}.brand{margin-bottom:40px}.bottom{flex-direction:column}}
+  </style>
+</head>
+<body><div class="grain"></div><main>
+  <a class="brand" href="/" aria-label="Life Santos"><img src="life-santos-logo.png" alt=""><span>LIFE <b>SANTOS</b></span></a>
+  <div class="eyebrow"><i class="spark"></i>ESPACE COMMUNAUTÉ</div>
+  <h1>Bienvenue à<br><span>Santos.</span></h1>
+  <p>Connecte ton compte Discord pour retrouver ton profil, consulter les plannings et échanger tes idées avec l’équipe.</p>
+  <a class="discord" id="discordLogin" href="/auth/discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.73 5.16a19.4 19.4 0 0 0-4.78-1.48.07.07 0 0 0-.08.04c-.2.36-.42.83-.57 1.2a18 18 0 0 0-5.4 0c-.16-.37-.39-.84-.58-1.2a.07.07 0 0 0-.08-.04 19.3 19.3 0 0 0-4.78 1.48.06.06 0 0 0-.03.03C.39 9.63-.44 13.95-.03 18.22a.08.08 0 0 0 .03.05 19.5 19.5 0 0 0 5.87 2.96.08.08 0 0 0 .08-.03c.45-.62.85-1.28 1.2-1.97a.08.08 0 0 0-.04-.1 12.8 12.8 0 0 1-1.84-.88.08.08 0 0 1-.01-.13c.12-.09.25-.19.37-.29a.07.07 0 0 1 .08-.01c3.86 1.76 8.03 1.76 11.85 0a.07.07 0 0 1 .08.01c.12.1.25.2.37.3a.08.08 0 0 1-.01.12 12 12 0 0 1-1.84.88.08.08 0 0 0-.04.1c.35.7.75 1.35 1.2 1.97a.08.08 0 0 0 .08.03 19.4 19.4 0 0 0 5.88-2.96.08.08 0 0 0 .03-.05c.49-4.94-.82-9.22-3.47-13.03a.06.06 0 0 0-.03-.03ZM8.02 14.87c-1.16 0-2.12-1.06-2.12-2.36s.94-2.36 2.12-2.36 2.13 1.07 2.12 2.36c0 1.3-.94 2.36-2.12 2.36Zm7.84 0c-1.16 0-2.12-1.06-2.12-2.36s.94-2.36 2.12-2.36 2.13 1.07 2.12 2.36c0 1.3-.94 2.36-2.12 2.36Z"/></svg><span>Se connecter avec Discord</span></a>
+  <div class="status" id="setupNotice" role="status"></div>
+  <div class="bottom"><span>Life Santos · Serveur communautaire</span><span>Une ville, mille histoires.</span></div>
+</main>
+<script>
+  const notice=document.querySelector('#setupNotice'),button=document.querySelector('#discordLogin');
+  if(new URLSearchParams(location.search).has('discord'))notice.textContent='La connexion Discord n’est pas encore activée. Le staff doit terminer les variables OAuth Discord dans Render.';
+  fetch('/api/config-status').then(r=>r.json()).then(s=>{if(!s.discordLogin){button.setAttribute('aria-disabled','true');button.addEventListener('click',e=>{e.preventDefault();notice.classList.add('show');notice.textContent='La connexion Discord n’est pas encore activée. Le staff doit ajouter le secret OAuth et l’identifiant du serveur Discord dans Render.'})}}).catch(()=>{});
+  if(new URLSearchParams(location.search).has('discord'))notice.classList.add('show');
+</script></body></html>
