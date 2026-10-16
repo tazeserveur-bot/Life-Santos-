@@ -41,3 +41,30 @@
   fetch('/api/me',{credentials:'same-origin'}).then(r=>r.json()).then(me=>{loggedIn=me.authenticated;window.lifeSantosUserId=me.user?.id;if(loggedIn)loadSuggestions()}).catch(()=>{});
   document.addEventListener('click',e=>{const button=e.target.closest('[data-page="suggestions"]');if(button&&loggedIn)setTimeout(loadSuggestions,100)});
 
+  fetch('/api/me',{credentials:'same-origin'}).then(r=>r.json()).then(me=>{
+    const nav=document.querySelectorAll('.side-nav')[1],label=document.querySelector('.staff-label');
+    if(nav)nav.hidden=!me.isStaff;if(label)label.hidden=!me.isStaff;
+    document.querySelectorAll('.profile b').forEach(el=>el.textContent=me.user?.username||'Connexion Discord');
+    document.querySelectorAll('.profile small').forEach(el=>el.textContent=me.isStaff?'Staff Life Santos':me.authenticated?'Membre Life Santos':'Connecte-toi pour continuer');
+  }).catch(()=>{});
+  fetch('/api/config-status').then(r=>r.json()).then(status=>{
+    const pill=document.querySelector('.bot-settings .status-pill');
+    if(pill){pill.textContent=status.discordAnnouncements?'Annonces configurées':'Discord à configurer';pill.classList.toggle('accepted',status.discordAnnouncements);pill.classList.toggle('pending',!status.discordAnnouncements)}
+  }).catch(()=>{});
+  document.querySelector('#downloadBackup')?.addEventListener('click',async()=>{
+    try{
+      const r=await fetch('/api/admin/backup',{credentials:'same-origin'});
+      if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Connecte-toi avec un compte staff pour sauvegarder les données.')}
+      const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='life-santos-backup.json';a.click();URL.revokeObjectURL(url);notify('Sauvegarde téléchargée. Conserve le fichier en lieu sûr.')
+    }catch(error){notify(error.message)}
+  });
+  document.querySelector('#detectDiscordResources')?.addEventListener('click',async()=>{
+    try{
+      const [r,s]=await Promise.all([fetch('/api/admin/discord-resources',{credentials:'same-origin'}),fetch('/api/admin/discord-settings',{credentials:'same-origin'})]);
+      const data=await r.json(),settings=await s.json();if(!r.ok)throw new Error(data.error||'Impossible de lire les salons Discord.');
+      const options=(items,current)=>items.map(item=>`<option value="${html(item.id)}" ${item.id===current?'selected':''}>${html(item.name)} · ${html(item.id)}</option>`).join('');
+      openModal(`<div class="eyebrow">CONFIGURATION DISCORD</div><h2>Choisir le salon et le rôle</h2><p>Les listes viennent du serveur Life Santos auquel le bot a été invité.</p><form id="discordResourceForm"><label>Salon où publier les plannings</label><select name="channel" required>${options(data.channels,settings.announcement_channel_id)}</select><label>Rôle des joueurs à mentionner (facultatif)</label><select name="role"><option value="">Ne mentionner aucun rôle</option>${options(data.roles,settings.player_role_id)}</select><button class="button primary">Enregistrer la configuration</button></form>`);
+      document.querySelector('#discordResourceForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const saved=await fetch('/api/admin/discord-settings',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({announcement_channel_id:f.get('channel'),player_role_id:f.get('role')})});const result=await saved.json();if(!saved.ok)throw new Error(result.error||'Enregistrement impossible.');closeModal();notify('Salon et rôle Discord enregistrés dans le site.');fetch('/api/config-status').then(x=>x.json()).then(status=>{const pill=document.querySelector('.bot-settings .status-pill');if(pill){pill.textContent=status.discordAnnouncements?'Annonces configurées':'Discord à configurer';pill.classList.toggle('accepted',status.discordAnnouncements);pill.classList.toggle('pending',!status.discordAnnouncements)}})};
+    }catch(error){notify(error.message)}
+  });
+
