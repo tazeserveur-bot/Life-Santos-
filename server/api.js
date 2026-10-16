@@ -44,7 +44,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
-app.use(express.static(publicDir));
+app.get(['/', '/index.html'], (req, res) => {
+  res.sendFile(path.join(publicDir, req.session.user ? 'index.html' : 'login.html'));
+});
+app.use(express.static(publicDir, { index: false }));
 
 async function initDb() {
   const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
@@ -99,7 +102,7 @@ async function getGuildMember(userId) {
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.get('/api/config-status', async (_req, res) => res.json({ discordLogin: Boolean(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET && process.env.DISCORD_GUILD_ID), discordAnnouncements: Boolean(process.env.DISCORD_BOT_TOKEN && (await getSiteSetting('announcement_channel_id') || process.env.ANNOUNCEMENT_CHANNEL_ID)), playerRole: Boolean(await getSiteSetting('player_role_id') || process.env.PLAYER_ROLE_ID), cloudinary: Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET), staffAccess: Boolean(process.env.STAFF_ROLE_IDS || process.env.STAFF_USER_IDS) }));
 app.get('/auth/discord', (req, res) => {
-  if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_GUILD_ID) return res.status(503).send('Configure Discord dans les variables Render.');
+  if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_GUILD_ID) return res.redirect('/?discord=configure');
   const state = crypto.randomBytes(24).toString('hex');
   req.session.oauthState = state;
   const query = new URLSearchParams({ client_id: process.env.DISCORD_CLIENT_ID, redirect_uri: callbackUrl(), response_type: 'code', scope: 'identify', state, prompt: 'consent' });
@@ -223,7 +226,7 @@ app.patch('/api/suggestions/:id', requireStaff, async (req, res) => {
   if (!result.rowCount) return res.sendStatus(404);
   res.json(result.rows[0]);
 });
-app.use((_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+app.use((_req, res) => res.redirect('/'));
 
 initDb().then(() => app.listen(process.env.PORT || 3000, '0.0.0.0', () => console.log('Life Santos API prête.'))).catch(error => { console.error('Database initialization failed:', error.message); process.exit(1); });
 
