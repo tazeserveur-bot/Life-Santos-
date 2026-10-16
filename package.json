@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
-  "scripts": {"api": "node server/api.js", "bot": "node server/bot.js"},
+  "scripts": {"api": "node server/api.js"},
   "engines": {"node": ">=20"},
   "dependencies": {
     "cloudinary": "^2.5.1",
     "connect-pg-simple": "^10.0.0",
-    "discord.js": "^14.21.0",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-session": "^1.18.1",

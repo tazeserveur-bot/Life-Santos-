@@ -1,83 +1,65 @@
-# Life Santos — hébergement Render gratuit
+# Life Santos — site et annonces Discord
 
-## Ce que contient le dépôt
+Site en ligne : https://life-santos.onrender.com
 
-- `public/` : site et logo Life Santos.
-- `server/api.js` : connexion Discord, sessions, contrôle des rôles, plannings et suggestions.
-- `server/bot.js` : bot Discord qui traite les annonces et envoie les MP lorsqu’il tourne.
-- `server/schema.sql` : tables PostgreSQL.
-- `render.yaml` : site/API et base PostgreSQL gratuits uniquement. Aucun worker payant.
-- `.env.example` : modèle des variables. Ne publie jamais ton vrai fichier `.env`.
+## Fonctionnement
 
-## 1. Créer les identifiants Discord
+Il n’y a pas de programme de bot séparé à garder ouvert ni de worker payant. Les membres se connectent au site avec Discord. Quand un membre du staff publie un planning, l’API du site utilise l’application Bot Discord pour poster l’affiche dans le salon choisi et mentionner le rôle des joueurs.
 
-1. Ouvre https://discord.com/developers/applications et sélectionne ton application.
-2. Dans **General Information**, copie **Application ID** : ce sera `DISCORD_CLIENT_ID`.
-3. Dans **OAuth2**, crée/copie **Client Secret** : ce sera `DISCORD_CLIENT_SECRET`.
-4. Dans **Bot**, crée le bot si nécessaire, puis copie son token : `DISCORD_BOT_TOKEN`. Garde-le privé.
-5. Dans **Bot → Privileged Gateway Intents**, active **Server Members Intent**. Il faut cet accès pour vérifier les rôles des membres et cibler le rôle joueurs. N’active pas Message Content.
-6. Dans Discord, ouvre **Paramètres utilisateur → Avancé → Mode développeur**. Clic droit sur le serveur Life Santos, les rôles staff/joueurs et le salon d’annonce, puis **Copier l’identifiant**.
-7. Ajoute le bot au serveur avec les permissions nécessaires : voir le salon, envoyer des messages, intégrer des liens et joindre des fichiers.
+Il faut quand même autoriser l’application Bot une fois dans le serveur et enregistrer son token dans les variables privées de Render. Discord exige cette autorisation pour savoir quel bot envoie le message. Le token n’est jamais mis dans le navigateur ou dans GitHub.
 
-## 2. Lancer le site gratuitement sur Render
+## 1. Configurer les variables Render
 
-Le dépôt GitHub `tazeserveur-bot/Life-Santos-` contient déjà les fichiers.
+Le service et la base sont déjà créés. Ne recrée pas de Blueprint.
 
-1. Ouvre le tableau de bord Render.
-2. Clique **New + → Blueprint**.
-3. Choisis le dépôt `tazeserveur-bot/Life-Santos-`, branche `main`.
-4. Render lit `render.yaml`. Vérifie que le site `life-santos` et la base `life-santos-db` sont sur **Free**. Il n’y a pas de worker dans cette version.
-5. Clique **Apply** seulement si l’écran indique bien les plans gratuits.
-6. Si Render demande les variables `sync:false`, saisis les valeurs ci-dessous dans Render. Génére automatiquement `SESSION_SECRET`; `DATABASE_URL` sera reliée à la base.
-7. Attends le déploiement, puis ouvre le service Web `life-santos` et copie son URL `https://…onrender.com`.
+1. Ouvre Render et sélectionne le service Web **life-santos**.
+2. Dans le menu à gauche, clique **Environment**.
+3. Ajoute les variables ci-dessous, puis clique **Save, rebuild, and deploy**.
+4. Garde `SESSION_SECRET` et `DATABASE_URL` telles que Render les a générées/associées.
 
-### Variables à saisir dans les réglages du service Web Render
-
-| Variable | Valeur |
+| Variable | Où trouver la valeur |
 |---|---|
-| `DISCORD_CLIENT_ID` | Application ID du portail Discord |
-| `DISCORD_CLIENT_SECRET` | Client Secret de **OAuth2** |
-| `DISCORD_BOT_TOKEN` | Token de l’application Bot (secret) |
-| `DISCORD_GUILD_ID` | Identifiant du serveur Life Santos |
-| `STAFF_ROLE_IDS` | Identifiants des rôles staff, séparés par des virgules |
-| `PLAYER_ROLE_ID` | Identifiant du rôle des joueurs destinataires |
-| `ANNOUNCEMENT_CHANNEL_ID` | Identifiant du salon d’annonces |
-| `CLOUDINARY_CLOUD_NAME` | Cloud name du compte Cloudinary |
-| `CLOUDINARY_API_KEY` | API Key Cloudinary |
-| `CLOUDINARY_API_SECRET` | API Secret Cloudinary (secret) |
+| `DISCORD_CLIENT_ID` | Discord Developer Portal → application Life Santos → OAuth2 → Identifiant du client |
+| `DISCORD_CLIENT_SECRET` | Même page → Clé secrète du client |
+| `DISCORD_BOT_TOKEN` | Developer Portal → Bot → Token |
+| `DISCORD_GUILD_ID` | Mode développeur Discord → clic droit sur le serveur → Copier l’identifiant |
+| `STAFF_ROLE_IDS` | Clic droit sur chaque rôle staff → Copier l’identifiant; sépare plusieurs ID par des virgules |
+| `PLAYER_ROLE_ID` | Clic droit sur le rôle joueurs à mentionner dans l’annonce → Copier l’identifiant |
+| `ANNOUNCEMENT_CHANNEL_ID` | Clic droit sur le salon des annonces → Copier l’identifiant |
+| `CLOUDINARY_CLOUD_NAME` | Tableau de bord Cloudinary → Cloud name |
+| `CLOUDINARY_API_KEY` | Tableau de bord Cloudinary → API Key |
+| `CLOUDINARY_API_SECRET` | Tableau de bord Cloudinary → API Secret |
 
-Les vraies valeurs restent dans les champs secrets de Render ou dans ton fichier `.env` local. Ne les colle pas dans GitHub ni dans une conversation.
+Ne colle pas les secrets dans GitHub ou dans une conversation. Saisis-les directement dans les champs Render.
 
-## 3. Autoriser la connexion Discord
+## 2. Autoriser le Bot dans Discord
 
-1. Dans Discord Developer Portal, ouvre **OAuth2 → Redirects**.
-2. Ajoute `https://TON-URL-RENDER.onrender.com/auth/discord/callback` en remplaçant par l’adresse réelle du service Web.
-3. Clique **Save Changes**.
-4. Ouvre le site et essaie **Connexion Discord**. L’utilisateur doit être membre de Life Santos; l’accès staff dépend des identifiants de rôle `STAFF_ROLE_IDS`.
+1. Dans [Discord Developer Portal](https://discord.com/developers/applications), ouvre l’application **Life santos event**.
+2. Dans **Bot**, copie le token et active **Server Members Intent** pour que le site puisse vérifier l’appartenance au serveur et les rôles.
+3. Ajoute le bot au serveur Life Santos. Donne-lui, dans le salon d’annonce, **View Channel**, **Send Messages** et **Embed Links**.
+4. L’URI OAuth2 est déjà enregistré : `https://life-santos.onrender.com/auth/discord/callback`.
 
-## 4. Faire tourner le bot gratuitement sur ton PC
+## 3. Utiliser le site
 
-Le bot doit rester lancé sur un ordinateur allumé et connecté à Internet. Quand l’ordinateur s’éteint, le bot se déconnecte et ne peut pas envoyer de messages. La base Render gratuite et le site gratuit ont aussi des limites indiquées plus bas.
+1. Ouvre https://life-santos.onrender.com et clique **Connexion Discord**.
+2. Un membre avec un rôle dans `STAFF_ROLE_IDS` peut ouvrir la partie staff.
+3. Dans **Créer un planning**, ajoute les dates et l’image, puis clique **Publier le planning**.
+4. Le planning est enregistré sur le site. L’API poste l’annonce dans `ANNOUNCEMENT_CHANNEL_ID` avec l’image et mentionne `PLAYER_ROLE_ID`.
 
-1. Installe Node.js version 20 ou supérieure depuis https://nodejs.org/.
-2. Télécharge le dépôt GitHub (bouton **Code → Download ZIP**) et décompresse-le.
-3. Ouvre PowerShell dans le dossier décompressé, celui qui contient `package.json`.
-4. Copie `.env.example` vers `.env`.
-5. Dans Render, ouvre `life-santos-db → Connect` et copie l’**External Database URL**. Mets-la en `DATABASE_URL` dans `.env`. Garde cette URL secrète.
-6. Remplis dans `.env` `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`, `PLAYER_ROLE_ID`, `ANNOUNCEMENT_CHANNEL_ID` et `FRONTEND_URL` (l’URL onrender.com de ton site). Mets aussi les variables Cloudinary si tu veux gérer les images depuis le bot plus tard.
-7. Dans PowerShell, lance `npm install`, puis `npm run bot`.
-8. Garde cette fenêtre ouverte. Le message `Bot Life Santos connecté` confirme que le bot est en ligne. Pour l’arrêter, fais `Ctrl+C`.
+Cette version annonce dans le salon Discord et mentionne le rôle; elle n’envoie pas de messages privés aux joueurs.
 
-Le bot doit utiliser la même base Render que le site pour récupérer la file des annonces. Il publie l’annonce dans le salon et tente les MP au rôle joueurs après qu’un planning est publié. Les MP fermés par un joueur peuvent échouer.
+## Limites de l’offre gratuite Render
 
-## Limites du mode gratuit Render
+- Le site peut se mettre en veille après 15 minutes sans trafic et prendre environ une minute à redémarrer.
+- La base gratuite expire le **15 novembre 2026**. Il faudra exporter ou migrer les données avant cette date.
+- Le site et la base utilisent le plan gratuit; aucun worker ni abonnement mensuel de bot n’est créé.
+- Les images importées sont conservées sur Cloudinary, car le disque local Render est temporaire.
 
-- Le site gratuit se met en veille après 15 minutes sans trafic et peut mettre environ une minute à repartir.
-- La base PostgreSQL gratuite Render expire 30 jours après sa création. Render conserve ensuite une période de grâce de 14 jours avant la suppression des données. Prévois d’exporter les données ou de migrer la base avant cette date.
-- Le bot n’est pas hébergé en continu sur Render dans cette configuration : il tourne sur ton PC.
-- Le disque local Render est temporaire. Les images sont envoyées vers Cloudinary, pas enregistrées sur le disque.
-- Aucun abonnement mensuel de worker n’est créé avec ce fichier Render.
+## Fichiers
 
-## Images et Canva
-
-Importe dans le planning l’image finale exportée depuis Canva. Pour la modifier sur Canva, exporte le visuel du studio, importe-le dans Canva, puis réimporte l’image finale sur Life Santos.
+- `public/` : site, studio et logo Life Santos.
+- `public/api-bridge.js` : relie le site aux routes API.
+- `server/api.js` : connexion Discord, accès staff, plannings et annonces Discord.
+- `server/schema.sql` : tables PostgreSQL.
+- `render.yaml` : services Render gratuits.
+- `.env.example` : noms des variables; les vraies valeurs restent dans Render.
