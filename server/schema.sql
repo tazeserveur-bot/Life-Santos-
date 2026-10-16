@@ -34,6 +34,11 @@ CREATE TABLE IF NOT EXISTS bot_jobs (
   finished_at TIMESTAMPTZ,
   error TEXT
 );
+CREATE TABLE IF NOT EXISTS site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 CREATE INDEX IF NOT EXISTS bot_jobs_pending_idx ON bot_jobs(status, created_at);
 CREATE INDEX IF NOT EXISTS suggestions_author_idx ON suggestions(author_id, created_at DESC);
 
