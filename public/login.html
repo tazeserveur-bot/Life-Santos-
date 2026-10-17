@@ -35,7 +35,7 @@
 </main>
 <script>
   const notice=document.querySelector('#setupNotice'),button=document.querySelector('#discordLogin');
-  if(new URLSearchParams(location.search).has('discord'))notice.textContent='La connexion Discord n’est pas encore activée. Le staff doit terminer les variables OAuth Discord dans Render.';
-  fetch('/api/config-status').then(r=>r.json()).then(s=>{if(!s.discordLogin){button.setAttribute('aria-disabled','true');button.addEventListener('click',e=>{e.preventDefault();notice.classList.add('show');notice.textContent='La connexion Discord n’est pas encore activée. Le staff doit ajouter le secret OAuth et l’identifiant du serveur Discord dans Render.'})}}).catch(()=>{});
+  if(new URLSearchParams(location.search).has('discord'))notice.textContent='La connexion Discord n’est pas encore activée. Le staff doit terminer les variables Discord dans Render.';
+  fetch('/api/config-status').then(r=>r.json()).then(s=>{if(!s.discordLogin){button.setAttribute('aria-disabled','true');button.addEventListener('click',e=>{e.preventDefault();notice.classList.add('show');notice.textContent='La connexion Discord n’est pas encore activée. Le staff doit configurer l’ID d’application, le secret OAuth, le token du bot et l’ID du serveur dans Render.'})}}).catch(()=>{});
   if(new URLSearchParams(location.search).has('discord'))notice.classList.add('show');
 </script></body></html>
