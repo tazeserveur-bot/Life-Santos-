@@ -39,6 +39,29 @@ CREATE TABLE IF NOT EXISTS site_settings (
   value TEXT NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE plans ALTER COLUMN image_url DROP NOT NULL;
+CREATE TABLE IF NOT EXISTS staff_members (
+  user_id TEXT PRIMARY KEY,
+  display_name TEXT NOT NULL DEFAULT '',
+  added_by TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS schedule_events (
+  id BIGSERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  starts_at TIMESTAMPTZ NOT NULL,
+  color TEXT NOT NULL DEFAULT '#b9ed65',
+  created_by TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS schedule_events_starts_idx ON schedule_events(starts_at);
+CREATE TABLE IF NOT EXISTS suggestion_votes (
+  suggestion_id BIGINT NOT NULL REFERENCES suggestions(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (suggestion_id, user_id)
+);
 CREATE INDEX IF NOT EXISTS bot_jobs_pending_idx ON bot_jobs(status, created_at);
 CREATE INDEX IF NOT EXISTS suggestions_author_idx ON suggestions(author_id, created_at DESC);
 

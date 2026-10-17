@@ -1,70 +1,36 @@
-# Life Santos — site et annonces Discord
+# Life Santos — site communauté
 
-Site en ligne : https://life-santos.onrender.com
+Le site se connecte à Discord pour reconnaître les membres du serveur. Les joueurs voient les suggestions communautaires, peuvent répondre et voter. Le staff dispose d’un calendrier interne et peut publier une affiche de planning sans éditeur graphique.
 
-## Fonctionnement
+## Accès
 
-Il n’y a pas de programme de bot séparé à garder ouvert ni de worker payant. Les membres se connectent au site avec Discord. Quand un membre du staff publie un planning, l’API du site utilise l’application Bot Discord pour poster l’affiche dans le salon choisi et mentionner le rôle des joueurs.
+- `STAFF_USER_IDS` contient l’ID Discord de l’administrateur principal (17 à 20 chiffres). Cet administrateur peut ajouter ou retirer d’autres IDs dans la page Administration.
+- Les IDs ajoutés dans le site ont accès à l’espace staff. Ils ne peuvent pas modifier la liste d’accès.
+- `STAFF_ROLE_IDS` reste facultatif : les membres ayant un de ces rôles Discord obtiennent aussi l’accès staff, mais ne gèrent pas la liste.
+- Un membre doit rejoindre le serveur Discord Life Santos pour se connecter au site.
 
-Il faut quand même autoriser l’application Bot une fois dans le serveur et enregistrer son token dans les variables privées de Render. Discord exige cette autorisation pour savoir quel bot envoie le message. Le token n’est jamais mis dans le navigateur ou dans GitHub.
+## Variables Render nécessaires
 
-## 1. Configurer les variables Render
+`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`, `STAFF_USER_IDS` et `SESSION_SECRET`. `DATABASE_URL` est fourni par la base PostgreSQL définie dans `render.yaml`. Les variables Cloudinary sont facultatives : sans elles, les images sont conservées directement dans PostgreSQL et jointes aux annonces Discord.
 
-Le service et la base sont déjà créés. Ne recrée pas de Blueprint.
+Dans Discord Developer Portal, garde l’URL OAuth de retour `https://life-santos.onrender.com/auth/discord/callback`. Active **Server Members Intent** dans Bot. Presence Intent et Message Content Intent ne sont pas utilisés. Invite le bot sur Life Santos et accorde-lui seulement la lecture des salons et rôles, ainsi que la permission d’envoyer des messages et pièces jointes dans le salon d’annonces.
 
-1. Ouvre Render et sélectionne le service Web **life-santos**.
-2. Dans le menu à gauche, clique **Environment**.
-3. Ajoute les variables ci-dessous, puis clique **Save, rebuild, and deploy**.
-4. Garde `SESSION_SECRET` et `DATABASE_URL` telles que Render les a générées/associées.
+## Déploiement
 
-| Variable | Où trouver la valeur |
-|---|---|
-| `DISCORD_CLIENT_ID` | Discord Developer Portal → application Life Santos → OAuth2 → Identifiant du client |
-| `DISCORD_CLIENT_SECRET` | Même page → Clé secrète du client |
-| `DISCORD_BOT_TOKEN` | Developer Portal → Bot → Token |
-| `DISCORD_GUILD_ID` | Mode développeur Discord → clic droit sur le serveur → Copier l’identifiant |
-| `STAFF_ROLE_IDS` | Clic droit sur chaque rôle staff → Copier l’identifiant; sépare plusieurs ID par des virgules |
-| `STAFF_USER_IDS` | Identifiant Discord des personnes staff, séparés par des virgules; permet de donner l’accès sans attribuer un rôle dédié |
-| `PLAYER_ROLE_ID` | Facultatif si tu choisis le rôle dans Administration → Détecter les salons et rôles |
-| `ANNOUNCEMENT_CHANNEL_ID` | Facultatif si tu choisis le salon dans Administration → Détecter les salons et rôles |
-| `CLOUDINARY_CLOUD_NAME` | Tableau de bord Cloudinary → Cloud name |
-| `CLOUDINARY_API_KEY` | Tableau de bord Cloudinary → API Key |
-| `CLOUDINARY_API_SECRET` | Tableau de bord Cloudinary → API Secret |
+1. Remplace les fichiers du dépôt GitHub par le contenu de ce dossier (la racine du service doit contenir `package.json`, `server/`, `public/` et `render.yaml`).
+2. Dans Render, ouvre le service `life-santos`, vérifie que le dépôt et la branche sont corrects, puis lance un déploiement après l’envoi des changements GitHub.
+3. Dans **Environment**, saisis l’ID utilisateur Discord principal dans `STAFF_USER_IDS` (pas l’ID du serveur ni l’ID de l’application Discord), puis sauvegarde.
+4. Connecte-toi au site avec ce compte. L’onglet Administration permettra d’ajouter les IDs du staff.
+5. Dans **Administration Discord**, choisis le salon des annonces et le rôle à notifier si besoin. Le bot a besoin d’un accès à ce salon.
 
-Ne colle pas les secrets dans GitHub ou dans une conversation. Saisis-les directement dans les champs Render.
+## Fonctions
 
-## 2. Autoriser le Bot dans Discord
+- Les suggestions et leurs réponses sont partagées entre les membres connectés; chaque membre peut cliquer « D’accord ».
+- Le calendrier hebdomadaire interne permet au staff d’ajouter des événements, heures, notes et couleurs.
+- Dans « Planning joueurs », importe l’image finale et indique les dates. La publication essaie aussi d’envoyer l’image et l’annonce Discord.
+- Les préférences de taille de texte, contraste et mode compact sont conservées sur l’appareil du membre.
+- Les sauvegardes JSON incluent les plannings, suggestions, réponses et événements staff. Télécharge-les régulièrement depuis Administration.
 
-1. Dans [Discord Developer Portal](https://discord.com/developers/applications), ouvre l’application **Life santos event**.
-2. Dans **Bot**, copie le token et active **Server Members Intent** pour que le site puisse vérifier l’appartenance au serveur et les rôles.
-3. Ajoute le bot au serveur Life Santos. Donne-lui accès aux salons avec **View Channels**, **Send Messages** et **Embed Links**.
-4. L’URI OAuth2 est déjà enregistré : `https://life-santos.onrender.com/auth/discord/callback`.
-5. Après le déploiement et ta connexion staff, ouvre Administration → **Détecter les salons et rôles** pour choisir le salon d’annonce et le rôle des joueurs. Le bot lit les listes directement dans le serveur.
-6. Mets ton identifiant Discord dans `STAFF_USER_IDS` (ou configure `STAFF_ROLE_IDS`) pour ouvrir l’espace staff. Plusieurs IDs sont séparés par des virgules.
+## Limites
 
-## 3. Utiliser le site
-
-1. Ouvre https://life-santos.onrender.com et clique **Connexion Discord**.
-2. Un membre avec un rôle dans `STAFF_ROLE_IDS` peut ouvrir la partie staff.
-3. Dans **Créer un planning**, ajoute les dates et l’image, puis clique **Publier le planning**.
-4. Le planning est enregistré sur le site. L’API poste l’annonce dans `ANNOUNCEMENT_CHANNEL_ID` avec l’image et mentionne `PLAYER_ROLE_ID`.
-
-Cette version annonce dans le salon Discord et mentionne le rôle; elle n’envoie pas de messages privés aux joueurs.
-
-## Limites de l’offre gratuite Render
-
-- Le site peut se mettre en veille après 15 minutes sans trafic et prendre environ une minute à redémarrer.
-- La base gratuite expire le **15 novembre 2026**. Il faudra exporter ou migrer les données avant cette date.
-- Le site et la base utilisent le plan gratuit; aucun worker ni abonnement mensuel de bot n’est créé.
-- Les images importées sont conservées sur Cloudinary, car le disque local Render est temporaire.
-- Render Free ne fournit pas de sauvegardes automatiques de PostgreSQL. Le bouton **Télécharger une sauvegarde** dans Administration exporte les plannings, suggestions, conversations et leurs liens d’images en JSON. Télécharge-le régulièrement et garde le fichier privé. Les créations du studio ne sont pas encore stockées dans cette base.
-- UptimeRobot Free vérifie une URL toutes les 5 minutes; cela peut réveiller le service, mais ne garantit pas que Render le gardera actif en permanence. L’offre Render gratuite peut toujours se mettre en veille.
-
-## Fichiers
-
-- `public/` : site, studio et logo Life Santos.
-- `public/api-bridge.js` : relie le site aux routes API.
-- `server/api.js` : connexion Discord, accès staff, plannings et annonces Discord.
-- `server/schema.sql` : tables PostgreSQL.
-- `render.yaml` : services Render gratuits.
-- `.env.example` : noms des variables; les vraies valeurs restent dans Render.
+Render Free peut mettre le site en veille après une période sans activité et ses ressources gratuites peuvent changer. L’envoi de messages privés par un bot n’est pas activé : les annonces se publient dans un salon Discord choisi.
